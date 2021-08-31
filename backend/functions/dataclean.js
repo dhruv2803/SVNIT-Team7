@@ -56,4 +56,4 @@ module.exports = {
     cleanDataBySymbol,
     getSymbols,
 };
-// console.log(getSymbols(cleanData(data)));
+// console.log(cleanDataBySymbol(cleanData(data), "AAPL"));
