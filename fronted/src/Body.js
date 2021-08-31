@@ -5,43 +5,65 @@ import CandlestickChart from "./Candlestick Chart";
 import OhlcChart from "./OHLC Chart";
 import RangeColumnChart from "./Range Column Chart";
 import axios from "axios";
+
 const Body = () => {
     const [inidate, setInidate] = useState("");
     const [fidate, setFidate] = useState("");
     const [symbol, setSymbol] = useState("");
+    const [allsymbols, setAllsymbols] = useState([]);
+    const [alldata, setAlldata] = useState([]);
 
-    // const [data,setData] = useState([]);
+    useEffect(() => {
+        async function getSymbols() {
+            const res = await axios.get("http://localhost:5000/symbols");
+            setAllsymbols(res.data.data);
+        }
 
-    // useEffect(() => {
-    //     async function getSymbols() {
-    //         const res = await axios.get("http://localhost:5000/");
-    //         console.log(res);
-    //     }
-    //     getSymbols();
-    // });
+        getSymbols();
+        async function getdatabysymbol() {
+            const res = await axios.get(
+                `http://localhost:5000/getdata?symbol=${symbol}&inidate=${inidate}&fidate=${fidate}`
+            );
+            setAlldata(res.data.data);
+            console.log(alldata);
+            // console.log(res.data);
+        }
+        getdatabysymbol();
+    }, []);
 
+    let newdata = [];
+    alldata.forEach((ele) => {
+        let newele = {};
+        newele.x = new Date(ele.date);
+        newele.y = [ele.open, ele.high, ele.low, ele.close];
+        newdata.push(newele);
+    });
+
+    // console.log(newdata);
     useEffect(() => {
         async function getdatabysymbol() {
             const res = await axios.get(
-                `http://localhost:5000/?symbol=${symbol}`
+                `http://localhost:5000/getdata?symbol=${symbol}&inidate=${inidate}&fidate=${fidate}`
             );
-            console.log(res);
+            setAlldata(res.data.data);
+            console.log(alldata);
+            // console.log(res.data);
         }
         getdatabysymbol();
-    }, [symbol]);
+    }, [symbol, inidate, fidate]);
 
     return (
         <div className="body">
             <div className="chart">
                 <div className="chart_plot">
                     <Route path="/" exact>
-                        <OhlcChart />
+                        <OhlcChart data={newdata} />
                     </Route>
                     <Route path="/candlestick" exact>
-                        <CandlestickChart />
+                        <CandlestickChart data={newdata} />
                     </Route>
                     <Route path="/rangedcolumn" exact>
-                        <RangeColumnChart />
+                        <RangeColumnChart data={newdata} />
                     </Route>
                 </div>
             </div>
@@ -75,8 +97,10 @@ const Body = () => {
                             setSymbol(e.target.value);
                         }}
                     >
-                        <option value="aapl">AAPL</option>
-                        <option value="aapl">abc</option>
+                        <option val="not selected">---Select---</option>
+                        {allsymbols.map((ele) => (
+                            <option value={ele}>{ele}</option>
+                        ))}
                     </select>
                 </div>
             </div>

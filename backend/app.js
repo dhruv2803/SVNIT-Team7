@@ -1,11 +1,13 @@
 const express = require("express");
 // const path = require("path");
 const data = require("./Stock List.json");
+const cors = require("cors");
 const app = express();
 const func = require("./functions/dataclean");
-
+app.use(cors());
 app.get("/getdata", (req, res) => {
-    console.log(req.query);
+    res.setHeader("Content-Type", "application/json");
+    // console.log(req.query);
     if (
         req.query.symbol !== "" &&
         req.query.inidate !== "" &&
@@ -16,24 +18,35 @@ app.get("/getdata", (req, res) => {
             req.query.inidate,
             req.query.fidate
         );
-        console.log(newdata);
+        // console.log(newdata);
         res.send({ data: newdata });
     } else if (req.query.symbol !== "") {
         let newdata = func.cleanDataBySymbol(
             func.cleanData(data),
             req.query.symbol
         );
-        console.log(newdata);
+        // console.log(newdata[0]);
+        res.send({ data: newdata });
+    } else if (req.query.inidate !== "" && req.query.fidate !== "") {
+        let newdata = func.cleanDataByDateRange(
+            func.cleanData(data),
+            req.query.inidate,
+            req.query.fidate
+        );
+        // console.log(newdata);
         res.send({ data: newdata });
     } else {
-        let newdata;
+        // console.log("here");
+        let newdata = func.cleanData(data);
+        // console.log(newdata);
+        res.send({ data: newdata });
     }
+});
 
-    // else{}
-    // console.log("here i am");
-    // let data = func.getSymbols();
-    // // console.log(data);
-    // res.send({ data });
+app.get("/symbols", (req, res) => {
+    let data = func.getSymbols();
+    // console.log(data);
+    res.send({ data });
     // console.log("data sent");
 });
 
